@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id("net.serenity-bdd.serenity-gradle-plugin") version "3.1.0"
+
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'net.serenity-bdd:serenity-cucumber:4.1.10'
+    implementation 'net.serenity-bdd:serenity-screenplay:4.1.10'
+    implementation 'net.serenity-bdd:serenity-junit:4.1.10'
+    implementation 'net.serenity-bdd:serenity-core:4.1.10'
+    testImplementation 'junit:junit:4.13.1'
+
+    implementation 'net.serenity-bdd:serenity-rest-assured:4.1.10'
+    implementation 'io.rest-assured:rest-assured:5.3.1'
+    implementation 'org.json:json:20231013'
+
+
+}
+
+test {
+    useJUnit()
+}
