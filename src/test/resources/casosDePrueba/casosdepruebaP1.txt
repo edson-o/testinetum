@@ -1,0 +1,140 @@
+- Pagina web de referencia: Plaza Vea - https://www.plazavea.com.pe
+
+Feature: Proceso de compra
+
+  @smoke @regression @HappyPath # nivel 5, tecnica: particion de equivalencia
+  Scenario Outline: [HappyPath] buscar producto
+	Given el usuario inicia sesion
+    And el usuario esta en la pagina principa
+    When el usuario busca "<palabra_clave>"
+    And filtra por la marca "<marca>"
+    And selecciona el primer producto de la lista
+    Then muestra la pagina de detalle del producto
+
+    Examples:
+      | palabra_clave | marca |
+      | arroz | Costeño |
+      | leche | Gloria  |
+	  
+	
+	@smoke @regression @HappyPath # nivel 5, tecnica: prueba funcional
+	Scenario Outline:[HappyPath] agregar producto al carrito
+	Given el usuario inicia sesion
+    And el usuario esta en la pagina principa
+	When el usuario busca "<palabra_clave>"
+    And filtra la marca "<marca>"
+    And selecciona el primer producto de la lista
+    And muestra la pagina de detalle del producto
+    And el usuario esta en el detalle del producto
+    And hace clic en "Agregar"
+	And completar los campos obligatorios
+	And el usuario hace clic en el icono del carrito
+    Then el producto aparece en el carrito con cantidad <cantidad>
+
+    Examples:
+      | palabra_clave | marca   | cantidad |
+      | arroz 		  | Costeño |   1      |
+      | leche 		  | Gloria  |   2      |
+
+
+  @regression @Critical @UnhappyPath #nivel 5, tecnica: Prueba de flujo alternativo
+  Scenario:[UnhappyPath] iniciar sesion antes de pagar (usuario no autenticado)
+    Given que el usuario no ha iniciado sesion
+    And el usuario procede al proceso de pago
+    And debe aparecer la pagina de inicio de sesion
+    And el usuario ingresa credenciales validas
+    Then debe ser redirigido a la pagina de pago
+
+  @Critical @HappyPath # nivel 4, tecnica: prueba de flujo principal
+  Scenario Outline:[HappyPath] elegir método de envío
+	Given el usuario inicia sesion
+    And el usuario esta en la pagina principa
+	When el usuario busca "<palabra_clave>"
+    And filtra por la marca "<marca>"
+    And selecciona el primer producto de la lista
+    And muestra la pagina de detalle del producto
+    And el usuario esta en el detalle del producto
+    And hace clic en "Agregar"
+    And que el usuario está en la pagina de pago
+    And selecciona el envío a domicilio
+	And completar los campos obligatorios
+    Then el sistema calcula el costo de envio y actualizar el total
+
+	Examples:
+      | palabra_clave | marca   |
+      | arroz 		  | Costeño |
+      | leche 		  | Gloria  |
+
+
+
+  @regression @HappyPath # nivel 5, tecnica: prueba funcional
+  Scenario Outline:[HappyPath] Validar el resumen de compra
+	Given el usuario inicia sesion
+    And el usuario esta en la pagina principa
+	When el usuario busca "<palabra_clave>"
+    And filtra por la marca "<marca>"
+    And selecciona el primer producto de la lista
+    And muestra la pagina de detalle del producto
+    And el usuario esta en el detalle del producto
+    And hace clic en "Agregar"
+	And completar los campos obligatorios
+    And que la compra fue exitosa
+    Then  el sistema muestra el resumen del pedido
+
+	Examples:
+      | palabra_clave | marca   |
+      | arroz 		  | Costeño |
+      | leche 		  | Gloria  |
+	  
+  @Negative @regression @UnhappyPath # nivel 5, tecnica: valores limite
+  Scenario Outline:[UnhappyPath] Ingreso de tarjeta inválida
+	Given el usuario inicia sesion
+    And el usuario esta en la pagina principa
+	When el usuario busca "<palabra_clave>"
+    And filtra por la marca "<marca>"
+    And selecciona el primer producto de la lista
+    And muestra la pagina de detalle del producto
+    And el usuario esta en el detalle del producto
+    And hace clic en "Agregar"
+    And que el usuario está en la pagina de pago
+    And el usuario selecciona "<medio_pago>"
+    And ingresa un número de tarjeta inválido
+    Then  debe mostrarse un mensaje de error
+
+    Examples:
+       | palabra_clave | marca   | medio_pago      |
+       | arroz 		   | Costeño | Tarjeta credito |
+
+  @regression @HappyPath #nivel 5, tecnica: prueba funcional
+  Scenario:[HappyPath] Eliminar producto del carrito
+	Given el usuario inicia sesion
+    And el usuario esta en la pagina principa
+	When el usuario busca "<palabra_clave>"
+    And filtra por la marca "<marca>"
+    And selecciona el primer producto de la lista
+    And muestra la pagina de detalle del producto
+    And el usuario esta en el detalle del producto
+    And hace clic en "Agregar"
+	And completar los campos obligatorios
+	And el usuario hace clic en el icono del carrito
+    And el usuario hace clic en "Eliminar"
+    Then el producto ya no debe aparecer en el carrito
+
+
+  @Manual @Exploratory @HappyPath #nivel 1, Tecnica: prueba exploratoria
+  Scenario:[HappyPath] verificar que la imagen del producto coincide con el producto entregado
+    Given que el usuario ha recibido el producto en casa
+    When compara la imagen mostrada en la web con el producto físico
+    Then verificar visualmente que coinciden el color, marca y presentacion
+
+  @Manual @Exploratory @HappyPath   #nivel: 1, Tecnica: Prueba exploratoria
+  Scenario:[HappyPath] validar que el empaque del producto no este dañado
+    Given que el usuario ha recibido el producto en casa
+    When inspecciona visualmente el empaque
+    Then confirmar que el empaque este intacto
+
+  @Manual @Exploratory @HappyPath # nivel 1, tecnica: prueba sensorial
+  Scenario:[HappyPath] verificar fecha de vencimiento impresa en el producto
+    Given que el usuario recibio un producto perecible
+    When observa la fecha de vencimiento en el empaque
+    Then validar que la fecha este dentro del rango permitido
